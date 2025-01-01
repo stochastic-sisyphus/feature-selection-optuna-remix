@@ -1,62 +1,31 @@
 # Feature Selection with Optuna
 
-A Python implementation of feature selection methods combining traditional approaches (PCA, LASSO) with Optuna-based optimization.
+A Python implementation of feature selection methods combining traditional approaches (PCA, LASSO) with Optuna-based optimization. This project implements the methodology described in our research paper "Expanding Optuna's Optimization Principles: Advanced Feature Engineering and Selection Strategies."
 
 ## Overview
 
-This project provides a comprehensive feature selection toolkit that combines classical dimensionality reduction techniques with modern hyperparameter optimization. It's particularly useful for:
-- Automated feature selection in machine learning pipelines
-- Comparing different feature selection methods
-- Visualizing feature importance across methods
-- Optimizing feature combinations using Optuna
+This project implements an interaction-aware feature selection framework that combines:
+- Traditional dimensionality reduction (PCA)
+- Sparse feature selection (LASSO)
+- Optuna-based optimization with interaction awareness
+- Comprehensive visualization suite
 
-## Features
+## Key Features
 
-- Multiple feature selection methods:
-  - PCA (Principal Component Analysis)
-  - LASSO (Least Absolute Shrinkage and Selection Operator)
-  - Optuna-optimized feature selection
-- Comprehensive visualization suite:
-  - Method comparison plots
-  - Runtime analysis
-  - Feature importance heatmaps
-- Automated preprocessing for both numerical and categorical data
-- Support for custom datasets and feature names
+- **Interaction-Aware Feature Selection:**
+  ```python
+  I(f_i) = α⋅MI(f_i; y) + β⋅∑(j≠i) I_interaction(f_i, f_j)
+  ```
+  where:
+  - α = 0.7 (mutual information weight)
+  - β = 0.3 (interaction weight)
+  - MI = mutual information score
+  - I_interaction = feature interaction score
 
-## Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/stochastic-sisyphus/feature-selection-optuna-remix.git
-cd feature-selection-optuna-remix
-
-# Create and activate virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-## Quick Start
-
-```python
-from feature_selection_optuna import FeatureSelector
-from sklearn.datasets import make_classification
-
-# Generate sample data
-X, y = make_classification(n_samples=1000, n_features=10, n_informative=5)
-feature_names = [f"Feature_{i}" for i in range(X.shape[1])]
-
-# Initialize and run feature selection
-selector = FeatureSelector(X, y, feature_names, "My Dataset")
-results = selector.run_all_methods()
-
-# Print results
-print("\nFeature Selection Results:")
-for method, score in results.items():
-    print(f"{method}: {score:.4f}")
-```
+- **Multiple Selection Methods:**
+  - PCA with automated component selection
+  - LASSO with L1 regularization
+  - Optuna with TPE sampler and pruning
 
 ## Datasets
 
@@ -89,7 +58,33 @@ X_adult = adult_data.iloc[:, :-1].values  # Features
 y_adult = adult_data.iloc[:, -1].values   # Target
 ```
 
-Both datasets are included in the repository and are automatically loaded when running the examples.
+## Installation
+
+```bash
+git clone https://github.com/stochastic-sisyphus/feature-selection-optuna-remix.git
+cd feature-selection-optuna-remix
+pip install -r requirements.txt
+```
+
+## Quick Start
+
+```python
+from feature_selection_optuna import FeatureSelector
+from sklearn.datasets import make_classification
+
+# Generate sample data
+X, y = make_classification(n_samples=1000, n_features=10, n_informative=5)
+feature_names = [f"Feature_{i}" for i in range(X.shape[1])]
+
+# Initialize and run feature selection
+selector = FeatureSelector(X, y, feature_names, "My Dataset")
+results = selector.run_all_methods()
+
+# Print results
+print("\nFeature Selection Results:")
+for method, score in results.items():
+    print(f"{method}: {score:.4f}")
+```
 
 ## Example Output
 
@@ -116,9 +111,6 @@ PCA: 0.8245
 LASSO: 0.9132
 Optuna: 1.0025
 ```
-- **Optuna** achieved the highest mutual information score (1.0025)
-- **LASSO** performed well but with more feature redundancy
-- **PCA** provided good dimensionality reduction but with some information loss
 
 #### 3. Runtime Performance
 ```
@@ -127,18 +119,6 @@ PCA: 0.0023
 LASSO: 0.0156
 Optuna: 0.2341
 ```
-- PCA was fastest but less selective
-- LASSO provided a good balance of speed and accuracy
-- Optuna took longer but found optimal feature combinations
-
-### Visualization Results
-
-![Feature Selection Results](/assets/Figure_1.png)
-
-The visualization shows:
-1. Method comparison based on mutual information scores
-2. Runtime comparison between different methods
-3. Feature importance heatmap showing the relative importance of each feature across methods
 
 ## Methods
 
@@ -158,31 +138,17 @@ The visualization shows:
 ## Requirements
 
 - Python 3.8+
-- numpy >= 1.21.0
-- pandas >= 1.3.0
-- scikit-learn >= 0.24.2
-- optuna >= 3.0.0
-- matplotlib >= 3.4.0
-- seaborn >= 0.11.0
-- tqdm >= 4.65.0
-- joblib >= 1.2.0
-- plotly >= 5.13.0
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+- numpy>=1.21.0
+- pandas>=1.3.0
+- scikit-learn>=0.24.2
+- optuna>=3.0.0
+- matplotlib>=3.4.0
+- seaborn>=0.11.0
+- tqdm>=4.65.0
+- joblib>=1.2.0
+- plotly>=5.13.0
 
 ## Citation
-
-If you use this package in your research, please cite:
 
 ```bibtex
 @software{feature_selection_optuna_remix,
@@ -192,6 +158,10 @@ If you use this package in your research, please cite:
   url = {https://github.com/stochastic-sisyphus/feature-selection-optuna-remix}
 }
 ```
+
+## License
+
+MIT License
 
 ## Acknowledgments
 

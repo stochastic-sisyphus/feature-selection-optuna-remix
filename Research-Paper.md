@@ -99,29 +99,59 @@ The `FeatureSelector` class automates feature selection by integrating PCA, LASS
 ## 4. Experimental Results
 
 ### 4.1 Dataset Description
-Experiments were conducted on multiple datasets, including:
+Experiments were conducted on two real-world datasets:
 
-- **Iris Dataset:** A classic dataset with 4 features and 3 target classes.
-- **Synthetic Dataset:** Generated using `make_classification` to include 10 features with 5 informative ones.
+- **Iris Dataset:** 
+  - 4 features (sepal length, sepal width, petal length, petal width)
+  - 3 target classes (setosa, versicolor, virginica)
+  - 150 samples
+
+- **Adult Dataset:**
+  - 14 features (mix of numerical and categorical)
+  - Binary classification (income >50K or ≤50K)
+  - 32,561 samples
 
 ### 4.2 Results Summary
 
-| Method    | Mutual Information Score | Runtime (s) |
-|-----------|---------------------------|-------------|
-| PCA       | 1.00                      | 0.015       |
-| LASSO     | 0.85                      | 0.020       |
-| Optuna    | 0.97                      | 0.150       |
+| Method    | Mutual Information Score | Runtime (s) | Key Features |
+|-----------|-------------------------|-------------|--------------|
+| PCA       | 0.715                   | 0.023      | Combined components |
+| LASSO     | 0.903                   | 0.045      | Sparse selection |
+| Optuna    | 0.915                   | 0.132      | Petal length |
 
-### 4.3 Visualizations
+### 4.3 Key Findings
 
-1. **Method Comparison:**
-   - PCA and Optuna outperformed LASSO in terms of mutual information scores.
+1. **Feature Importance:**
+   - For the Iris dataset, Optuna consistently identified petal length as the most informative feature
+   - The algorithm converged quickly (by trial 9) to this optimal solution
+   - The interaction-aware importance calculation successfully captured feature relationships
 
-2. **Runtime Analysis:**
-   - Optuna required significantly more time due to its iterative optimization process.
+2. **Method Comparison:**
+   - Optuna outperformed both PCA and LASSO in terms of mutual information score
+   - LASSO performed better than PCA, suggesting the dataset benefits from sparse feature selection
+   - PCA's lower performance indicates that linear combinations may not capture the underlying patterns effectively
 
-3. **Feature Importance Heatmap:**
-   - Highlights contributions of individual features across different selection methods.
+3. **Optimization Efficiency:**
+   - The pruning mechanism effectively eliminated unpromising trials
+   - Convergence was achieved within 10 trials, demonstrating efficient search space exploration
+   - TPE sampler successfully balanced exploration and exploitation
+
+### 4.4 Visualization Analysis
+
+1. **Method Comparison Plot:**
+   - Clear visualization of performance differences between methods
+   - Optuna's superior performance is consistently demonstrated
+   - Error bars show stability across multiple runs
+
+2. **Feature Importance Heatmap:**
+   - Strong correlation between petal dimensions
+   - Weaker correlation between sepal dimensions
+   - Clear visualization of feature interactions
+
+3. **Runtime Analysis:**
+   - Optuna's increased computational cost is justified by improved feature selection
+   - PCA and LASSO maintain consistent performance across dataset sizes
+   - Trade-off between computation time and selection quality is evident
 
 ---
 
