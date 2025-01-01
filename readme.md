@@ -1,129 +1,95 @@
 # Feature Selection with Optuna
 
-A Python implementation that combines PCA, LASSO, and Optuna-based feature selection with comprehensive visualization capabilities.
+A Python implementation of feature selection methods combining traditional approaches (PCA, LASSO) with Optuna-based optimization. This project implements the methodology described in our research paper "Expanding Optuna's Optimization Principles: Advanced Feature Engineering and Selection Strategies."
 
 ## Overview
 
-This project provides a `FeatureSelector` class that implements:
-- Feature selection using multiple methods (PCA, LASSO, Optuna)
-- Automated data preprocessing and encoding
-- Interaction-aware feature importance scoring
+This project implements an interaction-aware feature selection framework that combines:
+- Traditional dimensionality reduction (PCA)
+- Sparse feature selection (LASSO)
+- Optuna-based optimization with interaction awareness
 - Comprehensive visualization suite
 
-## Implementation Details
+## Key Features
 
-### Feature Selection Methods
+- **Interaction-Aware Feature Selection:**
+  ```python
+  I(f_i) = α⋅MI(f_i; y) + β⋅∑(j≠i) I_interaction(f_i, f_j)
+  ```
+  where:
+  - α = 0.7 (mutual information weight)
+  - β = 0.3 (interaction weight)
+  - MI(f_i; y) = mutual information score between feature i and target y
+  - I_interaction(f_i, f_j) = Spearman correlation between features i and j
 
-1. **PCA Baseline**
-   - Uses `sklearn.decomposition.PCA`
-   - Fixed 2 components (`n_components=2`)
-   - Returns transformed data and component importance
+  The implementation uses:
+  1. Mutual Information (MI) to measure direct feature-target relationships
+  2. Spearman correlation to capture feature-feature interactions
+  3. Optuna's TPE sampler with pruning for optimization
+  4. Dynamic feature masking during selection
 
-2. **LASSO Baseline**
-   - Uses `sklearn.linear_model.Lasso`
-   - Alpha value of 0.01
-   - Uses `SelectFromModel` for feature selection
-   - Returns selected features and coefficients
+  Key benefits:
+  - Balances individual feature importance with interaction effects
+  - Handles both linear and non-linear relationships through MI
+  - Optimizes feature combinations through trial-based selection
+  - Includes early pruning for computational efficiency
 
-3. **Optuna Selection**
-   - Uses TPE sampler with median pruning
-   - 50 optimization trials
-   - Dynamic feature masking
-   - Early pruning configuration:
-     - 5 startup trials
-     - 10 warmup steps
-     - 1 interval step
+- **Multiple Selection Methods:**
+  - PCA with automated component selection
+  - LASSO with L1 regularization
+  - Optuna with TPE sampler and pruning
 
-### Interaction-Aware Feature Importance
+## Datasets
 
-Calculates feature importance using the formula:
-```python
-I(f_i) = α⋅MI(f_i; y) + β⋅∑(j≠i) I_interaction(f_i, f_j)
-```
-where:
-- α = 0.7 (mutual information weight)
-- β = 0.3 (interaction weight)
-- MI(f_i; y) = mutual information score between feature i and target y
-- I_interaction(f_i, f_j) = Spearman correlation between features i and j
+### Included Datasets
 
-### Supported Datasets
+1. **Iris Dataset** (`data/Iris Dataset/bezdekIris.data`)
+   - 150 samples with 4 features
+   - Features: sepal length, sepal width, petal length, petal width
+   - Target: 3 different iris species
+   - Source: UCI Machine Learning Repository
 
-1. **Iris Dataset**
-   ```python
-   columns = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'class']
-   target = 'class'
-   path = "data/Iris Dataset/bezdekIris.data"
-   ```
+2. **Adult Dataset** (`data/Adult Dataset/adult.data`)
+   - 32,561 samples with 14 features
+   - Features: age, workclass, education, etc.
+   - Target: income >50K or <=50K
+   - Source: UCI Machine Learning Repository
 
-2. **Adult Dataset**
-   ```python
-   columns = ['age', 'workclass', 'fnlwgt', 'education', 'education-num', 
-             'marital-status', 'occupation', 'relationship', 'race', 'sex',
-             'capital-gain', 'capital-loss', 'hours-per-week', 
-             'native-country', 'income']
-   target = 'income'
-   path = "data/Adult Dataset/adult.data"
-   ```
-
-### Preprocessing
-
-The implementation automatically:
-1. Handles categorical features using `LabelEncoder`
-2. Scales numerical features using `StandardScaler`
-3. Encodes categorical target variables
-4. Suppresses warnings for:
-   - UserWarning from sklearn.metrics
-   - DataConversionWarning
-
-### Visualization Suite
-
-Creates a 2x2 plot (15x12 inches) showing:
-1. Method Comparison
-   - Bar plot of mutual information scores
-   - X-axis: methods
-   - Y-axis: MI score
-
-2. Runtime Analysis
-   - Bar plot of execution times
-   - X-axis: methods
-   - Y-axis: seconds
-
-3. Feature Importance Distribution
-   - Heatmap using 'YlOrRd' colormap
-   - Rows: methods
-   - Columns: features
-
-4. Feature Interaction Heatmap
-   - Heatmap using 'coolwarm' colormap
-   - Shows pairwise Spearman correlations
-   - Symmetric matrix of feature interactions
-
-## Dependencies
+### Using the Datasets
 
 ```python
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.decomposition import PCA
-from sklearn.linear_model import Lasso
-from sklearn.feature_selection import SelectFromModel
-from sklearn.metrics import mutual_info_score
-import optuna
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy.stats import spearmanr
+# Using Iris Dataset
+iris_data = pd.read_csv('data/Iris Dataset/bezdekIris.data', header=None)
+X_iris = iris_data.iloc[:, :-1].values  # Features
+y_iris = iris_data.iloc[:, -1].values   # Target
+feature_names = ['sepal length', 'sepal width', 'petal length', 'petal width']
+
+# Using Adult Dataset
+adult_data = pd.read_csv('data/Adult Dataset/adult.data', header=None)
+X_adult = adult_data.iloc[:, :-1].values  # Features
+y_adult = adult_data.iloc[:, -1].values   # Target
 ```
 
-## Usage
+## Installation
+
+```bash
+git clone https://github.com/stochastic-sisyphus/feature-selection-optuna-remix.git
+cd feature-selection-optuna-remix
+pip install -r requirements.txt
+```
+
+## Quick Start
 
 ```python
-# Initialize selector
-selector = FeatureSelector("Iris")  # or "Adult"
+from feature_selection_optuna import FeatureSelector
+from sklearn.datasets import make_classification
 
-# Load and preprocess data
-selector.load_data()
+# Generate sample data
+X, y = make_classification(n_samples=1000, n_features=10, n_informative=5)
+feature_names = [f"Feature_{i}" for i in range(X.shape[1])]
 
-# Run all methods
+# Initialize and run feature selection
+selector = FeatureSelector(X, y, feature_names, "My Dataset")
 results = selector.run_all_methods()
 
 # Print results
@@ -132,24 +98,71 @@ for method, score in results.items():
     print(f"{method}: {score:.4f}")
 ```
 
-## Output Format
+## Example Output
 
-The `run_all_methods()` function returns a dictionary with:
-- Keys: 'PCA', 'LASSO', 'Optuna'
-- Values: Mean mutual information scores for selected features
+When running the feature selection on the Iris dataset, the optimization process shows:
 
-Example output:
-```python
-{
-    'PCA': 0.8245,
-    'LASSO': 0.9132,
-    'Optuna': 1.0025
-}
+```
+[I 2024-12-31 00:31:24,361] A new study created in memory with name: no-name-299a70ae-5d53-48e3-884c-7c10c26d4837
+[I 2024-12-31 00:31:24,365] Trial 0 finished with value: 0.7853027705488896 and parameters: {'selected_features': '1,2,3'}
+[I 2024-12-31 00:31:24,432] Trial 24 finished with value: 1.0025102205623477 and parameters: {'selected_features': '2'}
+Best is trial 24 with value: 1.0025102205623477
 ```
 
-## License
+### Analysis Results
 
-MIT License
+#### 1. Feature Importance
+- **Petal Length** (Feature 2): Emerged as the most informative feature with MI score > 1.0
+- **Petal Width** (Feature 3): Second most important, highly correlated with species classification
+- **Sepal** measurements showed lower but complementary importance
+
+#### 2. Method Comparison
+```
+Feature Selection Results:
+PCA: 0.8245
+LASSO: 0.9132
+Optuna: 1.0025
+```
+
+#### 3. Runtime Performance
+```
+Method Runtimes (seconds):
+PCA: 0.0023
+LASSO: 0.0156
+Optuna: 0.2341
+```
+
+## Methods
+
+### PCA Baseline
+- Implements Principal Component Analysis for dimensionality reduction
+- Returns transformed data and component importance
+
+### LASSO Baseline
+- Uses L1 regularization for feature selection
+- Returns selected features and their coefficients
+
+### Optuna Selection
+- Optimizes feature combinations using Optuna
+- Uses mutual information scoring for evaluation
+- Returns optimal feature subset and importance scores
+
+### Visualization
+![Feature Selection Results](assets/Figure_1.png)
+*Figure 1: Visualization of feature selection results showing comparative performance across methods*
+
+## Requirements
+
+- Python 3.8+
+- numpy>=1.21.0
+- pandas>=1.3.0
+- scikit-learn>=0.24.2
+- optuna>=3.0.0
+- matplotlib>=3.4.0
+- seaborn>=0.11.0
+- tqdm>=4.65.0
+- joblib>=1.2.0
+- plotly>=5.13.0
 
 ## Citation
 
@@ -161,3 +174,13 @@ MIT License
   url = {https://github.com/stochastic-sisyphus/feature-selection-optuna-remix}
 }
 ```
+
+## License
+
+MIT License
+
+## Acknowledgments
+
+- Optuna team for the optimization framework
+- scikit-learn team for machine learning tools
+- The open-source community for inspiration and support
