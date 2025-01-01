@@ -126,10 +126,6 @@ Optuna: 0.2341
 - Implements Principal Component Analysis for dimensionality reduction
 - Returns transformed data and component importance
 
-### Visualization
-![Feature Selection Results](assets/Figure_1.png)
-*Figure 1: Visualization of feature selection results showing comparative performance across methods*
-
 ### LASSO Baseline
 - Uses L1 regularization for feature selection
 - Returns selected features and their coefficients
@@ -138,6 +134,10 @@ Optuna: 0.2341
 - Optimizes feature combinations using Optuna
 - Uses mutual information scoring for evaluation
 - Returns optimal feature subset and importance scores
+
+### Visualization
+![Feature Selection Results](assets/Figure_1.png)
+*Figure 1: Visualization of feature selection results showing comparative performance across methods*
 
 ## Requirements
 
