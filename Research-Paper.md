@@ -44,7 +44,7 @@ However, new **feature selection** techniques have emerged in recent years, incl
    - Handles both numerical and categorical features via automatic label encoding.  
    - Modular design in Python for easy adoption and extension.  
    - Supports two UCI datasets (Iris and Adult) for demonstration and validation.  
-   - Public repository (e.g., [GitHub.com/user/optuna-feature-selection](https://github.com/user/optuna-feature-selection)) fully aligns with the descriptions presented in this paper.
+   - Public repository (e.g., [https://github.com/stochastic-sisyphus/feature-selection-optuna-remix](https://github.com/stochastic-sisyphus/feature-selection-optuna-remix)) fully aligns with the descriptions presented in this paper.
 
 5. **Statistical Significance Testing**  
    - We provide **p-values** from paired t-tests to confirm the robustness of our improvements over baseline methods.  
