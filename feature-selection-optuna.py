@@ -12,7 +12,7 @@ Features:
 - Comprehensive visualization of results
 - Support for multiple datasets
 
-Author: Vanessa Sochat
+Author: Stochastic Sisyphus
 """
 
 import pandas as pd
