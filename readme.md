@@ -1,43 +1,56 @@
 # Feature Selection with Optuna
 
-A Python implementation of feature selection methods combining traditional approaches (PCA, LASSO) with Optuna-based optimization. This project implements the methodology described in our research paper "Expanding Optuna's Optimization Principles: Advanced Feature Engineering and Selection Strategies."
+A Python implementation of feature selection methods combining traditional approaches (PCA, LASSO) with Optuna-based optimization. This project implements an adaptive feature selection framework with dynamic weight adjustment and convergence monitoring.
 
 ## Overview
 
-This project implements an interaction-aware feature selection framework that combines:
+This project implements an advanced feature selection framework that combines:
 - Traditional dimensionality reduction (PCA)
 - Sparse feature selection (LASSO)
-- Optuna-based optimization with interaction awareness
+- Optuna-based optimization with dynamic weight adjustment
 - Comprehensive visualization suite
+- Convergence monitoring and early stopping
 
 ## Key Features
 
-- **Interaction-Aware Feature Selection:**
+- **Dynamic Weight-Adjusted Feature Selection:**
   ```python
-  I(f_i) = α⋅MI(f_i; y) + β⋅∑(j≠i) I_interaction(f_i, f_j)
+  I(f_i) = α(t)⋅MI(f_i; y) + β(t)⋅∑(j≠i) I_interaction(f_i, f_j)
   ```
   where:
-  - α = 0.7 (mutual information weight)
-  - β = 0.3 (interaction weight)
+  - α(t), β(t) = dynamically adjusted weights at trial t
   - MI(f_i; y) = mutual information score between feature i and target y
   - I_interaction(f_i, f_j) = Spearman correlation between features i and j
 
   The implementation uses:
   1. Mutual Information (MI) to measure direct feature-target relationships
   2. Spearman correlation to capture feature-feature interactions
-  3. Optuna's TPE sampler with pruning for optimization
-  4. Dynamic feature masking during selection
+  3. Dynamic weight adjustment based on score trends
+  4. Feature count penalty to balance selection size
 
   Key benefits:
+  - Automatically adapts weights based on feature importance trends
   - Balances individual feature importance with interaction effects
-  - Handles both linear and non-linear relationships through MI
   - Optimizes feature combinations through trial-based selection
-  - Includes early pruning for computational efficiency
+  - Includes early stopping with convergence monitoring
+
+- **Advanced Convergence Monitoring:**
+  - Minimum trials threshold before convergence checks
+  - Patience-based early stopping
+  - Score improvement tracking
+  - Dynamic weight adjustment based on performance
+
+- **Comprehensive Visualization Suite:**
+  - Method comparison plots
+  - Runtime performance analysis
+  - Feature importance heatmaps
+  - Feature interaction visualization
+  - Results saved automatically to results directory
 
 - **Multiple Selection Methods:**
   - PCA with automated component selection
   - LASSO with L1 regularization
-  - Optuna with TPE sampler and pruning
+  - Optuna with TPE sampler and convergence monitoring
 
 ## Datasets
 
@@ -82,54 +95,142 @@ pip install -r requirements.txt
 
 ```python
 from feature_selection_optuna import FeatureSelector
-from sklearn.datasets import make_classification
 
-# Generate sample data
-X, y = make_classification(n_samples=1000, n_features=10, n_informative=5)
-feature_names = [f"Feature_{i}" for i in range(X.shape[1])]
+# Initialize feature selector with default weights
+selector = FeatureSelector("iris", alpha=0.7, beta=0.3)
 
-# Initialize and run feature selection
-selector = FeatureSelector(X, y, feature_names, "My Dataset")
-results = selector.run_all_methods()
+# Run all methods
+selector.optuna_selection(n_trials=50, min_improvement=1e-4, patience=8)
+selector.pca_baseline()
+selector.lasso_baseline()
 
-# Print results
-print("\nFeature Selection Results:")
-for method, score in results.items():
-    print(f"{method}: {score:.4f}")
+# Create visualizations (saved to results directory)
+selector.visualize_results()
+
+# Print results summary
+print("\nResults Summary:")
+print("-" * 40)
+for method, score in selector.results.items():
+    runtime = selector.runtimes[method]
+    print(f"{method.upper()}:")
+    print(f"Score: {score:.4f}")
+    print(f"Runtime: {runtime:.2f} seconds")
+print("-" * 40)
 ```
+
+The script will:
+1. Load and preprocess the dataset
+2. Run Optuna optimization with dynamic weight adjustment
+3. Compare against PCA and LASSO baselines
+4. Generate comprehensive visualizations
+5. Print performance metrics and runtime statistics
 
 ## Example Output
 
-When running the feature selection on the Iris dataset, the optimization process shows:
+When running the feature selection on the Iris dataset:
 
 ```
-[I 2024-12-31 00:31:24,361] A new study created in memory with name: no-name-299a70ae-5d53-48e3-884c-7c10c26d4837
-[I 2024-12-31 00:31:24,365] Trial 0 finished with value: 0.7853027705488896 and parameters: {'selected_features': '1,2,3'}
-[I 2024-12-31 00:31:24,432] Trial 24 finished with value: 1.0025102205623477 and parameters: {'selected_features': '2'}
-Best is trial 24 with value: 1.0025102205623477
+Processing iris dataset...
+
+Loaded iris dataset:
+Shape: (150, 5)
+Features: sepal_length, sepal_width, petal_length, petal_width
+Preprocessed 4 features
+Target classes: 3
+
+Convergence reached after 50 trials:
+Best score: 0.9569
+Selected features: ['petal_length', 'petal_width']
+
+Total runtime: 0.76 seconds
+Final weights - Alpha: 0.136, Beta: 0.864
+
+Results Summary:
+----------------------------------------
+OPTUNA:
+Score: 0.9569
+Runtime: 0.76 seconds
+PCA:
+Score: 1.0986
+Runtime: 0.00 seconds
+LASSO:
+Score: 0.7853
+Runtime: 0.00 seconds
+----------------------------------------
+```
+
+When running on the Adult dataset:
+
+```
+Processing adult dataset...
+
+Loaded adult dataset:
+Shape: (32561, 15)
+Features: age, workclass, fnlwgt, education, education-num, marital-status, occupation, relationship, race, sex, capital-gain, capital-loss, hours-per-week, native-country
+Preprocessed 14 features
+Target classes: 2
+
+Convergence reached after 44 trials:
+Best score: 0.1439
+Selected features: ['age', 'fnlwgt', 'marital-status', 'relationship', 'capital-gain', 'hours-per-week']
+
+Total runtime: 10.00 seconds
+Final weights - Alpha: 0.477, Beta: 0.523
+
+Results Summary:
+----------------------------------------
+OPTUNA:
+Score: 0.1446
+Runtime: 10.00 seconds
+PCA:
+Score: 0.5520
+Runtime: 0.01 seconds
+LASSO:
+Score: 0.0564
+Runtime: 0.01 seconds
+----------------------------------------
 ```
 
 ### Analysis Results
 
 #### 1. Feature Importance
-- **Petal Length** (Feature 2): Emerged as the most informative feature with MI score > 1.0
-- **Petal Width** (Feature 3): Second most important, highly correlated with species classification
-- **Sepal** measurements showed lower but complementary importance
+For the Iris dataset:
+- **Petal Length and Width**: Emerged as the most informative features with a combined score > 0.95
+- **Sepal** measurements showed lower importance and were not selected in the final feature set
+
+For the Adult dataset:
+- Selected 6 key features out of 14 available features
+- Age, marital status, and relationship status emerged as important predictors
+- Capital gain and hours per week provide important financial indicators
 
 #### 2. Method Comparison
+Iris Dataset:
 ```
-Feature Selection Results:
-PCA: 0.8245
-LASSO: 0.9132
-Optuna: 1.0025
+OPTUNA: 0.9569
+PCA: 1.0986
+LASSO: 0.7853
+```
+
+Adult Dataset:
+```
+OPTUNA: 0.1446
+PCA: 0.5520
+LASSO: 0.0564
 ```
 
 #### 3. Runtime Performance
+Iris Dataset:
 ```
-Method Runtimes (seconds):
-PCA: 0.0023
-LASSO: 0.0156
-Optuna: 0.2341
+OPTUNA: 0.76 seconds
+PCA: 0.00 seconds
+LASSO: 0.00 seconds
+```
+
+Adult Dataset:
+```
+OPTUNA: 10.00 seconds
+PCA: 0.01 seconds
+LASSO: 0.01 seconds
 ```
 
 ## Methods
@@ -148,8 +249,20 @@ Optuna: 0.2341
 - Returns optimal feature subset and importance scores
 
 ### Visualization
-![Feature Selection Results](assets/Figure_1.png)
-*Figure 1: Visualization of feature selection results showing comparative performance across methods*
+
+#### Iris Dataset Analysis
+![Iris Dataset Analysis](assets/iris_analysis.png)
+*Figure 1: Visualization of feature selection results for the Iris dataset showing method comparison, runtime analysis, feature importance, and feature interactions*
+
+#### Adult Dataset Analysis
+![Adult Dataset Analysis](assets/adult_analysis.png)
+*Figure 2: Visualization of feature selection results for the Adult dataset showing comparative performance and feature relationships across methods*
+
+The visualizations include:
+1. Method comparison showing relative performance
+2. Runtime analysis across different approaches
+3. Feature importance heatmap indicating relative contribution of each feature
+4. Feature interaction matrix showing relationships between features
 
 ## Requirements
 
